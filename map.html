@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Map — Okayto</title>
+<link rel="stylesheet" href="css/base.css">
+<style>
+body{background:var(--cream)}
+.wrap{display:grid;grid-template-columns:420px 1fr;height:100vh;padding-top:86px}
+.side{padding:20px var(--g) 30px;overflow:auto;display:flex;flex-direction:column;gap:18px}
+.side h1{font-size:clamp(64px,6vw,104px)}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.filters .chip[aria-pressed=true]{background:var(--c,var(--ink));border-color:var(--c,var(--ink));color:#fff}
+.count{font:600 15px var(--body)}
+.items{display:flex;flex-direction:column;gap:10px}
+.item{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:center;padding:12px;border-radius:22px;background:var(--paper);cursor:pointer;border:none;text-align:left;
+  box-shadow:0 18px 30px -24px rgba(40,25,5,.6);transition:transform .5s var(--spring),box-shadow .3s}
+.item:hover{transform:translateX(6px)}
+.item.on{box-shadow:0 0 0 2.5px var(--ink),0 18px 30px -24px rgba(40,25,5,.6)}
+.item .plate{width:64px}
+.item .nm{font-family:var(--display);font-size:28px;line-height:.9;text-transform:uppercase}
+.item .mt{font-size:13px;opacity:.75;margin-top:4px}
+.item .km{font-family:var(--display);font-size:30px}
+.empty{font-size:17px;padding:20px;border-radius:20px;background:var(--paper)}
+.mapbox{position:relative;margin:0 var(--g) var(--g) 0;border-radius:36px;overflow:hidden;background:#EDE2CC;box-shadow:inset 0 0 0 1.5px rgba(28,18,6,.08),0 30px 60px -40px rgba(40,25,5,.6)}
+.mapbox svg{position:absolute;inset:0;width:100%;height:100%}
+.pin{position:absolute;width:76px;height:76px;transform:translate(-50%,-100%);cursor:pointer;border:none;background:none;padding:0;transition:transform .5s var(--spring),opacity .4s;z-index:2}
+.pin .head{position:absolute;left:4px;top:0;width:68px;height:68px}
+.pin .plate{width:100%}
+.pin::after{content:"";position:absolute;left:50%;bottom:-8px;width:26px;height:9px;margin-left:-13px;border-radius:50%;background:rgba(28,18,6,.35);filter:blur(3px)}
+.pin .stem{position:absolute;left:50%;top:60px;width:4px;height:16px;margin-left:-2px;background:linear-gradient(90deg,#8a9097,#eef0f2,#7a8087);border-radius:2px}
+.pin:hover,.pin.on{transform:translate(-50%,-100%) scale(1.18);z-index:4}
+.pin.off{opacity:.18;transform:translate(-50%,-100%) scale(.7);pointer-events:none}
+.pin .lab{position:absolute;left:50%;top:-30px;transform:translateX(-50%);white-space:nowrap;font:600 13px var(--body);background:var(--ink);color:var(--cream);padding:5px 10px;border-radius:20px;opacity:0;transition:opacity .25s}
+.pin:hover .lab,.pin.on .lab{opacity:1}
+.you{position:absolute;width:22px;height:22px;border-radius:50%;background:var(--chilli);box-shadow:0 0 0 6px rgba(216,64,31,.25),0 0 0 14px rgba(216,64,31,.12);transform:translate(-50%,-50%);z-index:1}
+.you::after{content:"You";position:absolute;left:30px;top:2px;font:600 13px var(--body)}
+.card{position:absolute;right:20px;top:20px;width:min(380px,calc(100% - 40px));background:var(--paper);border-radius:28px;padding:22px;z-index:6;
+  box-shadow:0 30px 60px -24px rgba(40,25,5,.6);transform:translateY(-16px) scale(.96);opacity:0;pointer-events:none;transition:transform .6s var(--spring),opacity .3s}
+.card.open{transform:none;opacity:1;pointer-events:auto}
+.card .top{display:flex;gap:16px;align-items:center}
+.card .plate{width:96px;flex:none}
+.card h2{font-size:42px}
+.card .mt{font-size:15px;margin-top:6px;opacity:.8}
+.card .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.card .warn{margin-top:10px;font:600 14px var(--body);color:var(--chilli)}
+.card .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.card .x{position:absolute;right:14px;top:14px;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--ink);background:transparent;cursor:pointer;font:600 18px var(--body)}
+.zoom{position:absolute;left:20px;bottom:20px;display:flex;flex-direction:column;gap:6px;z-index:5}
+.zoom button{width:46px;height:46px;border-radius:50%;border:none;background:var(--paper);font:600 22px var(--body);cursor:pointer;box-shadow:0 10px 20px -10px rgba(0,0,0,.5)}
+.layer{position:absolute;inset:0;transform-origin:50% 50%;transition:transform .7s var(--out)}
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr;grid-template-rows:auto auto;height:auto}
+  .side{overflow:visible}
+  .side{order:2}
+  .mapbox{order:1;margin:0 var(--g);height:62vh}
+  .card{left:12px;right:12px;top:auto;bottom:12px;width:auto;transform:translateY(30px)}
+  .side h1{font-size:64px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="side">
+    <div><span class="eyebrow">Bengaluru · 6 kitchens</span><h1 class="display depth" style="margin-top:10px">The map.</h1></div>
+    <div class="filters" id="filters"></div>
+    <div class="count" id="count"></div>
+    <div class="items" id="items"></div>
+  </aside>
+  <div class="mapbox" id="mapbox">
+    <div class="layer" id="layer">
+      <svg viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs><pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.6" fill="rgba(28,18,6,.08)"/></pattern></defs>
+        <rect width="1000" height="800" fill="url(#dots)"/>
+        <!-- parks -->
+        <path d="M430 300 C470 270 560 280 575 330 C590 380 520 420 470 405 C420 390 400 330 430 300Z" fill="#B9C98A"/>
+        <path d="M120 120 C170 90 250 110 250 160 C250 210 180 230 140 205 C100 180 90 140 120 120Z" fill="#C4D296"/>
+        <!-- lakes -->
+        <path d="M700 520 C760 480 860 500 870 570 C880 640 790 680 730 650 C670 620 650 555 700 520Z" fill="#9CC3C9"/>
+        <path d="M200 560 C240 530 310 545 315 590 C320 640 260 660 220 640 C180 620 165 585 200 560Z" fill="#A9CCD1"/>
+        <!-- ring road -->
+        <ellipse cx="500" cy="420" rx="430" ry="330" fill="none" stroke="#fff" stroke-width="26"/>
+        <ellipse cx="500" cy="420" rx="430" ry="330" fill="none" stroke="#F2B21B" stroke-width="14"/>
+        <!-- main roads -->
+        <g fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round">
+          <path d="M60 300 C300 330 520 290 980 360"/><path d="M520 0 C500 220 520 520 470 800"/><path d="M150 760 C330 560 620 420 920 120"/><path d="M0 520 C260 480 520 560 1000 640"/>
+        </g>
+        <g fill="none" stroke="rgba(28,18,6,.12)" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round">
+          <path d="M60 300 C300 330 520 290 980 360"/><path d="M520 0 C500 220 520 520 470 800"/>
+        </g>
+        <!-- area names -->
+        <g font-family="Tanker, Impact" font-size="30" fill="rgba(28,18,6,.28)" letter-spacing="1">
+          <text x="600" y="270">INDIRANAGAR</text><text x="360" y="500">KORAMANGALA</text><text x="540" y="150">FRAZER TOWN</text>
+          <text x="210" y="620" font-size="24">HSR LAYOUT</text><text x="100" y="360">JAYANAGAR</text><text x="740" y="460">SHIVAJINAGAR</text>
+        </g>
+      </svg>
+      <div class="you" style="left:50%;top:46%"></div>
+      <div id="pins"></div>
+    </div>
+    <div class="zoom"><button type="button" id="zin" aria-label="Zoom in">+</button><button type="button" id="zout" aria-label="Zoom out">−</button><button type="button" id="zre" aria-label="Reset view" style="font-size:12px">Reset</button></div>
+    <div class="card" id="card" role="dialog" aria-label="Kitchen"></div>
+  </div>
+</div>
+<script src="js/data.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/page.js"></script>
+<script>
+const f=new Set();const qd=OK.q('d');if(qd&&OK.diet(qd))f.add(qd);let savedOnly=OK.q('saved')==='1';let open=null,zoom=1;
+const fl=document.getElementById('filters');
+OK.DIETS.forEach(d=>{const b=document.createElement('button');b.type='button';b.className='chip';b.style.setProperty('--c',d.tag);b.textContent=d.name;b.setAttribute('aria-pressed',f.has(d.k));
+  b.onclick=()=>{f.has(d.k)?f.delete(d.k):f.add(d.k);b.setAttribute('aria-pressed',f.has(d.k));render()};fl.append(b)});
+const sb=document.createElement('button');sb.type='button';sb.className='chip';sb.textContent='Saved only';sb.setAttribute('aria-pressed',savedOnly);
+sb.onclick=()=>{savedOnly=!savedOnly;sb.setAttribute('aria-pressed',savedOnly);render();if(savedOnly&&!OK.saved.get().length)toast('Nothing saved yet. Tap Save on a kitchen.')};fl.append(sb);
+const pins=document.getElementById('pins'),items=document.getElementById('items'),card=document.getElementById('card');
+OK.R.forEach(r=>{const p=document.createElement('button');p.type='button';p.className='pin';p.dataset.id=r.id;p.style.left=(r.map[0]*100)+'%';p.style.top=(r.map[1]*100+8)+'%';p.setAttribute('aria-label',r.n);
+  p.innerHTML=`<span class="stem"></span><span class="head">${plate(r.img)}</span><span class="lab">${r.n}</span>`;p.onclick=()=>openCard(r.id);pins.append(p)});
+const ok=r=>[...f].every(k=>OK.fitsDiet(r,k))&&(!savedOnly||OK.saved.has(r.id));
+function render(){const list=OK.R.filter(ok);
+  pins.querySelectorAll('.pin').forEach(p=>{const r=OK.byId(p.dataset.id);p.classList.toggle('off',!ok(r));p.classList.toggle('on',open===r.id)});
+  document.getElementById('count').textContent=`${list.length} kitchen${list.length===1?'':'s'} match`;
+  items.innerHTML=list.length?'':`<div class="empty">No kitchen fits all of that yet. Try fewer diets${savedOnly?' or turn off Saved only':''}.</div>`;
+  list.forEach(r=>{const b=document.createElement('button');b.type='button';b.className='item'+(open===r.id?' on':'');b.innerHTML=`${plate(r.img)}<div><div class="nm">${r.n}</div><div class="mt">${r.area} · ${r.d.map(k=>OK.diet(k).name).join(', ')}</div></div><div class="km">${r.km.toFixed(1)}</div>`;
+    b.onclick=()=>openCard(r.id);items.append(b)});
+  if(open&&!ok(OK.byId(open)))closeCard()}
+function openCard(id){const r=OK.byId(id);open=id;
+  card.innerHTML=`<button class="x" type="button" aria-label="Close">×</button><div class="top">${plate(r.img)}<div><h2 class="display">${r.n}</h2><div class="mt">${r.area} · ${r.km.toFixed(1)} km · ${r.open}</div></div></div>
+    <div class="tags">${r.d.map(k=>`<span class="tag" style="--c:${OK.diet(k).tag}">${OK.diet(k).name}</span>`).join('')}</div>
+    <div class="mt" style="margin-top:12px">${r.note}</div>${r.warn?`<div class="warn">Heads up: ${r.warn.toLowerCase()}</div>`:''}
+    <div class="acts"><a class="btn" href="restaurant.html?id=${r.id}">Open kitchen</a><button class="btn ghost" type="button" id="cs">${OK.saved.has(r.id)?'Saved':'Save'}</button></div>`;
+  card.classList.add('open');card.querySelector('.x').onclick=closeCard;
+  card.querySelector('#cs').onclick=e=>{const now=OK.saved.toggle(r.id);e.target.textContent=now?'Saved':'Save';toast(now?`${r.n} saved.`:`Removed ${r.n}.`);render()};
+  // pan the map so the pin is comfortably in view
+  const L=document.getElementById('layer');zoom=Math.max(zoom,1.25);L.style.transform=`scale(${zoom}) translate(${(.5-r.map[0])*40}%,${(.45-r.map[1])*40}%)`;
+  render()}
+function closeCard(){open=null;card.classList.remove('open');render()}
+const L=document.getElementById('layer');
+document.getElementById('zin').onclick=()=>{zoom=Math.min(2.2,zoom+.25);L.style.transform=`scale(${zoom})`};
+document.getElementById('zout').onclick=()=>{zoom=Math.max(1,zoom-.25);L.style.transform=`scale(${zoom})`};
+document.getElementById('zre').onclick=()=>{zoom=1;L.style.transform='';closeCard()};
+addEventListener('keydown',e=>{if(e.key==='Escape')closeCard()});
+render();const fo=OK.q('focus');if(fo&&OK.byId(fo))openCard(fo);
+</script>
+</body>
+</html>

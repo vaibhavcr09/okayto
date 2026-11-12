@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — Okayto</title>
+<link rel="stylesheet" href="css/base.css">
+<style>
+body{background:var(--cream)}
+.ahero{min-height:100vh;padding:130px var(--g) 8vh;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden}
+.ahero h1{font-size:clamp(64px,10vw,200px);position:relative;z-index:2}
+.ahero h1 .hl{color:var(--chilli)}
+.ahero p{max-width:520px;font-size:clamp(18px,1.5vw,22px);line-height:1.4;margin-top:4vh;position:relative;z-index:2}
+.ahero .pl{position:absolute;width:min(22vw,38vh);right:var(--g);top:12vh;z-index:1}
+.statement{padding:16vh var(--g);font-size:clamp(46px,6.2vw,112px);line-height:.9}
+.statement span{opacity:.18;transition:opacity .5s}
+.statement span.lit{opacity:1}
+.bands a{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:5vh var(--g);text-decoration:none;background:var(--bg);color:var(--ink2);position:relative;overflow:hidden}
+.bands a .w{font-size:clamp(70px,11vw,200px);transition:transform .7s var(--spring)}
+.bands a:hover .w{transform:translateX(24px)}
+.bands a .r{display:flex;align-items:center;gap:24px}
+.bands a .r p{max-width:280px;font-size:16px;line-height:1.35}
+.bands a .plate{width:clamp(90px,11vw,170px);transition:transform 1s var(--out)}
+.bands a:hover .plate{transform:rotate(60deg) scale(1.1)}
+.steps{padding:16vh var(--g);display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.steps h2{grid-column:1/-1;font-size:clamp(60px,8vw,140px);margin-bottom:5vh}
+.st{background:var(--paper);border-radius:28px;padding:28px;min-height:300px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 26px 40px -30px rgba(40,25,5,.55)}
+.st .n{font-family:var(--display);font-size:110px;line-height:.8;color:var(--turmeric);text-shadow:0 .02em 0 rgba(0,0,0,.25),0 .06em .1em rgba(0,0,0,.15)}
+.st .t{font-family:var(--display);font-size:36px;line-height:.9;text-transform:uppercase;margin-top:20px}
+.st p{font-size:16px;line-height:1.4;margin-top:12px;opacity:.85}
+.cta{margin:0 var(--g) 14vh;border-radius:44px;background:var(--turmeric);padding:10vh clamp(24px,5vw,80px);display:flex;justify-content:space-between;align-items:center;gap:30px;flex-wrap:wrap;position:relative;overflow:hidden;box-shadow:0 40px 60px -40px rgba(40,25,5,.7)}
+.cta h2{font-size:clamp(60px,8vw,140px);position:relative;z-index:2}
+.cta .btns{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:2}
+.cta .btns{margin-right:min(20vw,300px)}
+.cta img{position:absolute;right:-3%;bottom:-36%;width:min(24vw,320px);opacity:.95;filter:drop-shadow(0 30px 30px rgba(0,0,0,.35));transform:rotate(-10deg)}
+@media (max-width:900px){
+  .ahero .pl{position:relative;right:auto;top:auto;width:70vw;margin:0 auto 4vh}
+  .ahero{justify-content:flex-start;padding-top:110px}
+  .steps{grid-template-columns:1fr}
+  .st{min-height:0}
+  .bands a{flex-direction:column;align-items:flex-start}
+  .bands a .r{flex-direction:row-reverse;justify-content:flex-end}
+  .cta img{width:44vw;bottom:-14%;opacity:.5}
+  .cta .btns{margin-right:0}
+}
+</style>
+</head>
+<body>
+<section class="ahero">
+  <div class="pl" id="pl"></div>
+  <span class="eyebrow" style="position:relative;z-index:2">About Okayto</span>
+  <h1 class="display depth" style="margin-top:14px">Lunch<br>shouldn't need<br><span class="hl">twenty</span> questions.</h1>
+  <p>Okayto started with a friend who couldn't eat wheat and a city full of kitchens that said “should be fine”. We decided to check, dish by dish, and write it down.</p>
+</section>
+<section class="statement display" id="stmt"></section>
+<section class="bands" id="bands"></section>
+<section class="steps">
+  <h2 class="display depth reveal">How a kitchen<br>gets verified.</h2>
+  <div class="st reveal"><div><div class="n">01</div><div class="t">A diner adds it</div><p>Someone who eats there sends the name, the dishes and a photo of the menu.</p></div></div>
+  <div class="st reveal"><div><div class="n">02</div><div class="t">We visit</div><p>Within two weeks we eat there, ask about every component and look at the fryer.</p></div></div>
+  <div class="st reveal"><div><div class="n">03</div><div class="t">Three diners confirm</div><p>Certificates only count when three diners photograph a current one.</p></div></div>
+  <div class="st reveal"><div><div class="n">04</div><div class="t">It stays honest</div><p>Reports of cross-contact show on the kitchen's page until the kitchen fixes them.</p></div></div>
+</section>
+<section class="cta reveal">
+  <h2 class="display depth">Know a<br>kitchen?</h2>
+  <div class="btns"><a class="btn" href="add.html">Add a kitchen</a><a class="btn ghost" href="verify.html">Verify a certificate</a></div>
+  <img src="frames/f_0180.webp" alt="">
+</section>
+<script src="js/data.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/page.js"></script>
+<script>
+document.getElementById('pl').innerHTML=plate('img/fill_gf.jpg');
+const s='We check the fryer, not just the menu. We count net carbs, not good intentions. We photograph certificates, not promises.';
+document.getElementById('stmt').innerHTML=s.split(' ').map(w=>`<span>${w}</span>`).join(' ');
+const words=[...document.querySelectorAll('#stmt span')];
+function lit(){const r=document.getElementById('stmt').getBoundingClientRect();const p=Math.min(1,Math.max(0,(innerHeight*.85-r.top)/(r.height+innerHeight*.3)));const n=Math.round(p*words.length);words.forEach((w,i)=>w.classList.toggle('lit',i<n))}
+addEventListener('scroll',lit,{passive:true});lit();
+document.getElementById('bands').innerHTML=OK.DIETS.map(d=>`<a href="diet.html?d=${d.k}" style="--bg:${d.bg};--ink2:${d.ink}"><span class="w display depth">${d.name}</span><span class="r"><p>${d.line}</p>${plate(d.fill)}</span></a>`).join('');
+addEventListener('scroll',()=>{document.querySelectorAll('#bands .plate').forEach(p=>{const r=p.getBoundingClientRect();p.style.transform=`rotate(${(innerHeight-r.top)*.15}deg)`})},{passive:true});
+revealCheck();
+</script>
+</body>
+</html>

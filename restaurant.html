@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kitchen — Okayto</title>
+<link rel="stylesheet" href="css/base.css">
+<style>
+body{--navbg:var(--cream)}
+.hero{position:relative;padding:130px var(--g) 8vh;display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(24px,4vw,64px);align-items:center;min-height:92vh;background:var(--hbg,var(--turmeric));color:var(--hink,var(--ink));overflow:hidden}
+.hero::before{content:"";position:absolute;width:70vw;height:70vw;right:-22vw;top:-18vw;border-radius:50%;background:rgba(0,0,0,.06)}
+.hero .crumb{font:600 14px var(--body);display:flex;gap:10px;align-items:center;margin-bottom:22px}
+.hero .crumb a{text-decoration:none;opacity:.75}.hero .crumb a:hover{opacity:1}
+.hero h1{font-size:clamp(70px,10.5vw,190px);position:relative}
+.hero .meta{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:26px;font-size:18px}
+.hero .meta b{font-weight:600}
+.hero .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
+.hero .tags .tag{font-size:15px;padding:7px 14px;box-shadow:0 0 0 2px color-mix(in srgb,var(--hink) 55%,transparent),0 8px 16px -10px rgba(0,0,0,.5)}
+.hero .warn{display:inline-flex;margin-top:18px;font:600 15px var(--body);background:rgba(0,0,0,.14);padding:8px 14px;border-radius:30px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
+.actions .pill{font-size:15px;padding:13px 20px;color:var(--hink)}
+.actions .pill.solid{color:var(--hbg,var(--cream));background:var(--hink,var(--ink));border-color:var(--hink,var(--ink))}
+.actions .pill.saved{background:var(--hink);color:var(--hbg)}
+.platebox{position:relative;justify-self:center;width:min(40vw,560px);perspective:1200px}
+.platebox .plate{transform-style:preserve-3d;transition:transform .9s var(--out)}
+.heroside{position:absolute;right:var(--g);bottom:5vh;font:600 14px var(--body);opacity:.8}
+
+section.blk{padding:13vh var(--g)}
+.blk h2{font-size:clamp(58px,8vw,140px)}
+.blk .sub{max-width:520px;font-size:19px;line-height:1.4;margin-top:20px}
+.vhead{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;flex-wrap:wrap}
+.vchips{display:flex;gap:8px;flex-wrap:wrap}
+.vchips .chip[aria-pressed=true]{background:var(--c);border-color:var(--c);color:#fff}
+.dishes{margin-top:7vh;display:flex;flex-direction:column;gap:14px}
+.dish{background:var(--paper);border-radius:28px;padding:30px clamp(20px,3vw,40px);display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;
+  box-shadow:0 2px 0 rgba(0,0,0,.05),0 26px 40px -30px rgba(40,25,5,.55);transition:transform .6s var(--spring)}
+.dish:hover{transform:translateY(-4px)}
+.dish .dn{font-family:var(--display);font-size:clamp(34px,3.8vw,62px);line-height:.88;text-transform:uppercase}
+.dish .vs{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.dish .vr{display:flex;align-items:center;gap:12px;font-size:16px}
+.dish .vr .dl{font-weight:600;min-width:96px}
+.dish .vr .nt{opacity:.75}
+.dish .carb{text-align:right;font-family:var(--display);font-size:clamp(58px,6vw,96px);line-height:.8}
+.dish .carb small{display:block;font:600 13px var(--body);margin-top:8px}
+.dish.dim{opacity:.45}
+.trust{background:var(--ink);color:var(--cream)}
+.trust .rows{margin-top:7vh}
+.trow{display:grid;grid-template-columns:1fr 1.4fr auto;gap:24px;align-items:baseline;padding:28px 0;border-top:1.5px solid rgba(247,238,220,.18)}
+.trow .k{font-family:var(--display);font-size:clamp(40px,4.6vw,76px);line-height:.9;text-transform:uppercase;color:var(--turmeric)}
+.trow .w{font-size:19px;line-height:1.35}
+.trow .when{font:600 14px var(--body);opacity:.65;text-align:right}
+.trust .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:6vh}
+.trust .cta .btn{background:var(--turmeric);color:var(--ink)}
+.trust .cta .btn.ghost{background:transparent;color:var(--cream);border-color:var(--cream)}
+.others .strip{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:6vh}
+@media (max-width:1100px){.others .strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:20px;margin-right:calc(-1*var(--g))}.others .okit{flex:0 0 72vw;max-width:300px;scroll-snap-align:start}}
+.okit{position:relative;border-radius:28px;padding:24px;min-height:320px;color:var(--ink);text-decoration:none;background:var(--paper);overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;
+  box-shadow:0 26px 40px -30px rgba(40,25,5,.55);transition:transform .6s var(--spring)}
+.okit:hover{transform:translateY(-6px) rotate(-.6deg)}
+.okit .plate{position:absolute;width:70%;right:-16%;bottom:-20%;transition:transform .9s var(--out)}
+.okit:hover .plate{transform:rotate(30deg) scale(1.05)}
+.okit .on{font-family:var(--display);font-size:clamp(30px,2.6vw,42px);line-height:.9;text-transform:uppercase;position:relative}
+.okit .om{font:600 14px var(--body);position:relative}
+
+/* staff card modal */
+.modal{position:fixed;inset:0;z-index:80;background:var(--turmeric);color:var(--ink);display:flex;flex-direction:column;padding:22px var(--g) 30px;clip-path:circle(0% at var(--mx,50%) var(--my,50%));transition:clip-path .8s var(--out);overflow:auto}
+.modal.open{clip-path:circle(150% at var(--mx,50%) var(--my,50%))}
+.modal .mtop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.modal .pickers{display:flex;flex-direction:column;gap:14px;margin-top:22px}
+.modal .pickers .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.modal .pickers .lab{font:600 14px var(--body);min-width:90px}
+.card{margin:auto 0;padding-top:4vh}
+.card .say{font:600 clamp(18px,2vw,24px) var(--body)}
+.card .dishname{font-size:clamp(60px,9vw,160px);margin-top:12px}
+.card .lines{margin-top:4vh;display:flex;flex-direction:column;gap:6px}
+.card .lines div{font-family:var(--display);font-size:clamp(36px,4.6vw,82px);line-height:.95;text-transform:uppercase}
+.card .lines div span{color:var(--chilli)}
+.card .thanks{margin-top:3vh;font-size:19px}
+
+.nf{min-height:80vh;display:flex;flex-direction:column;justify-content:center;gap:24px}
+.nf h1{font-size:clamp(80px,14vw,240px)}
+@media (max-width:820px){
+  .hero{grid-template-columns:1fr;padding-top:110px}
+  .platebox{width:76vw;order:-1}
+  .hero h1{font-size:clamp(60px,17vw,110px)}
+  .heroside{position:static;margin-top:20px}
+  .dish{grid-template-columns:1fr;gap:12px}
+  .dish .carb{text-align:left}
+  .dish .vr{flex-wrap:wrap;gap:6px 10px}.dish .vr .nt{flex-basis:100%}
+  .trow{grid-template-columns:1fr;gap:8px}.trow .when{text-align:left}
+}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Staff card" aria-hidden="true">
+  <div class="mtop"><span class="logo">okayto</span><div class="pills"><button class="pill" id="copyCard" type="button">Copy text</button><button class="pill solid" id="closeModal" type="button">Close</button></div></div>
+  <div class="pickers">
+    <div class="row"><span class="lab">Dish</span><span id="pDish"></span></div>
+    <div class="row"><span class="lab">I can't have</span><span id="pAll"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+</div>
+<script src="js/data.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/page.js"></script>
+<script src="lib/gsap.min.js"></script>
+<script>
+const id=OK.q('id'),r=OK.byId(id),app=document.getElementById('app');
+if(!r){
+  document.title='Kitchen not found — Okayto';
+  app.innerHTML=`<section class="page nf"><span class="eyebrow">Nothing on this plate</span><h1 class="display depth">Kitchen<br>not found.</h1><p style="font-size:19px;max-width:460px">That link doesn't match a kitchen we know. It may have closed, or the address got cut off.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="index.html#finder">Find a table</a><a class="btn ghost" href="map.html">Open the map</a></div></section>`;
+}else{
+  document.title=r.n+' — Okayto';
+  const main=OK.diet(r.d[0]);
+  const startD=OK.q('d');
+  const active=new Set(startD&&OK.diet(startD)?[startD]:OK.DIETS.map(d=>d.k));
+  app.innerHTML=`
+  <section class="hero" id="hero" style="--hbg:${main.bg};--hink:${main.ink}" ${main.ink.toLowerCase()!=='#1c1206'?'data-dark':''}>
+    <div style="position:relative">
+      <div class="crumb"><a href="index.html#finder">Kitchens</a><span>/</span><span>${r.area}</span></div>
+      <h1 class="display depth">${r.n}</h1>
+      <div class="meta"><span><b>${r.area}</b></span><span>${r.km.toFixed(1)} km away</span><span>${r.open}</span><span>${r.price}</span></div>
+      <div class="tags">${r.d.map(k=>`<a class="tag" style="--c:${OK.diet(k).tag};text-decoration:none" href="diet.html?d=${k}">${OK.diet(k).name}</a>`).join('')}</div>
+      ${r.warn?`<div class="warn">Heads up: ${r.warn.toLowerCase()}</div>`:''}
+      <div class="actions">
+        <button class="pill" id="save" type="button"></button>
+        <a class="pill" href="map.html?focus=${r.id}">Directions</a>
+        <a class="pill" href="tel:${r.phone.replace(/\s/g,'')}">Call</a>
+        <button class="pill solid" id="staff" type="button">Show staff card</button>
+      </div>
+    </div>
+    <div class="platebox" id="pbox"><div class="plate" id="plate"><div class="cast"></div><div class="wall"></div><div class="rim"></div><div class="food" style="background-image:url(${r.img})"></div></div></div>
+    <div class="heroside">${r.note}</div>
+  </section>
+  <section class="blk" id="verdict">
+    <div class="vhead reveal"><div><span class="eyebrow">Your verdict</span><h2 class="display depth" style="margin-top:14px">What you<br>can eat here.</h2></div>
+      <div><p style="font:600 14px var(--body);margin-bottom:10px">Show verdicts for</p><div class="vchips" id="vchips"></div></div></div>
+    <div class="dishes" id="dishes"></div>
+  </section>
+  <section class="blk trust" id="trust">
+    <span class="eyebrow reveal">Trust</span>
+    <h2 class="display reveal" style="margin-top:14px">How we<br>know.</h2>
+    <div class="rows">${r.trust.map(t=>`<div class="trow reveal"><div class="k">${t[0]}</div><div class="w">${t[1]}</div><div class="when">${t[2]}</div></div>`).join('')}</div>
+    <div class="cta reveal"><a class="btn" href="report.html?id=${r.id}">Report a problem</a><a class="btn ghost" href="verify.html?id=${r.id}">Verify a certificate</a></div>
+  </section>
+  <section class="blk others">
+    <span class="eyebrow reveal">Nearby</span>
+    <h2 class="display depth reveal" style="margin-top:14px">Other kitchens.</h2>
+    <div class="strip">${OK.R.filter(o=>o.id!==r.id).map(o=>`<a class="okit reveal" href="restaurant.html?id=${o.id}"><div class="on">${o.n}</div><div class="om">${o.km.toFixed(1)} km · ${o.d.map(k=>OK.diet(k).name).join(', ')}</div><div class="plate"><div class="cast"></div><div class="wall"></div><div class="rim"></div><div class="food" style="background-image:url(${o.img})"></div></div></a>`).join('')}</div>
+  </section>`;
+
+  // save
+  const sv=document.getElementById('save');
+  const paintSave=()=>{const s=OK.saved.has(r.id);sv.textContent=s?'Saved':'Save';sv.classList.toggle('saved',s);sv.setAttribute('aria-pressed',s)};
+  paintSave();sv.onclick=()=>{const now=OK.saved.toggle(r.id);paintSave();toast(now?`${r.n} saved. Find it on the map.`:`Removed ${r.n} from saved.`)};
+  // verdict chips
+  const vc=document.getElementById('vchips');
+  OK.DIETS.forEach(d=>{const b=document.createElement('button');b.type='button';b.className='chip';b.style.setProperty('--c',d.tag);b.textContent=d.name;b.setAttribute('aria-pressed',active.has(d.k));
+    b.onclick=()=>{if(active.has(d.k)&&active.size===1){toast('Keep at least one diet on.');return}active.has(d.k)?active.delete(d.k):active.add(d.k);b.setAttribute('aria-pressed',active.has(d.k));renderDishes()};vc.append(b)});
+  const label={full:'Full',partial:'Partial',no:'No'};
+  function renderDishes(){
+    const box=document.getElementById('dishes');
+    box.innerHTML=r.dishes.map(ds=>{const rows=[...active].map(k=>{const v=ds.v[k]||['no'];return `<div class="vr"><span class="dl">${OK.diet(k).name}</span><span class="verdict ${v[0]}">${label[v[0]]}</span>${v[1]?`<span class="nt">${v[1]}</span>`:''}</div>`}).join('');
+      const worst=active.size<4&&[...active].some(k=>(ds.v[k]||['no'])[0]==='no');
+      return `<div class="dish${worst?' dim':''}"><div><div class="dn">${ds.n}</div><div class="vs">${rows}</div></div><div class="carb">${ds.carbs}g<small>net carbs</small></div></div>`}).join('');
+    if(window.gsap)gsap.from('#dishes .dish',{y:24,opacity:0,duration:.6,stagger:.06,ease:'power3.out',clearProps:'all'});
+  }
+  renderDishes();
+  // plate tilt
+  const pb=document.getElementById('pbox'),pl=document.getElementById('plate');
+  addEventListener('pointermove',e=>{const nx=e.clientX/innerWidth-.5,ny=e.clientY/innerHeight-.5;pl.style.transform=`rotateY(${nx*14}deg) rotateX(${-ny*12}deg) rotate(${nx*10}deg)`});
+  if(window.gsap){gsap.from('#hero h1',{y:80,opacity:0,duration:1.1,ease:'power4.out'});gsap.from('#plate',{scale:.6,rotation:-60,opacity:0,duration:1.4,ease:'power3.out'});gsap.from('#hero .meta,#hero .tags,#hero .actions',{y:24,opacity:0,duration:.8,stagger:.08,delay:.2,ease:'power3.out'})}
+
+  // staff card
+  const modal=document.getElementById('modal');let pickDish=0;const no=new Set(r.al.slice(0,1));
+  const pD=document.getElementById('pDish'),pA=document.getElementById('pAll');
+  r.dishes.forEach((ds,i)=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=ds.n;b.setAttribute('aria-pressed',i===0);b.style.marginRight='6px';
+    b.onclick=()=>{pickDish=i;[...pD.children].forEach((c,j)=>c.setAttribute('aria-pressed',j===i));paintCard()};pD.append(b)});
+  OK.ALLERGENS.forEach(a=>{const b=document.createElement('button');b.type='button';b.className='chip x';b.textContent=a;b.setAttribute('aria-pressed',no.has(a));b.style.marginRight='6px';
+    b.onclick=()=>{no.has(a)?no.delete(a):no.add(a);b.setAttribute('aria-pressed',no.has(a));paintCard()};pA.append(b)});
+  function cardText(){const ds=r.dishes[pickDish];const swaps=Object.values(ds.v).filter(v=>v[0]==='partial'&&v[1]).map(v=>v[1]);
+    return {ds,swaps:[...new Set(swaps)],al:[...no]}}
+  function paintCard(){const {ds,swaps,al}=cardText();
+    document.getElementById('card').innerHTML=`<div class="say">Hello! For my order, please:</div><div class="dishname display depth">${ds.n}</div>
+      <div class="lines">${swaps.map(s=>`<div>${s}</div>`).join('')}${al.length?`<div>No <span>${al.join(', ').toLowerCase()}</span>, please. I'm allergic.</div>`:''}${!swaps.length&&!al.length?'<div>As it comes. Thank you.</div>':''}</div>
+      <div class="thanks">Shown from Okayto at ${r.n}. Thank you for checking with the kitchen.</div>`}
+  paintCard();
+  const staff=document.getElementById('staff');
+  staff.onclick=e=>{const b=staff.getBoundingClientRect();modal.style.setProperty('--mx',(b.left+b.width/2)+'px');modal.style.setProperty('--my',(b.top+b.height/2)+'px');modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'};
+  const close=()=>{modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.style.overflow=''};
+  document.getElementById('closeModal').onclick=close;addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+  document.getElementById('copyCard').onclick=async()=>{const {ds,swaps,al}=cardText();const txt=`For my order (${ds.n}): ${swaps.join('; ')}${al.length?`. No ${al.join(', ').toLowerCase()} — I'm allergic.`:''}`;
+    try{await navigator.clipboard.writeText(txt);toast('Copied. Paste it into your order notes.')}catch(e){toast('Copy blocked by the browser. Show the card instead.')}};
+  if(OK.q('card')==='1')staff.click();
+}
+watchReveals&&watchReveals();revealCheck();navTone();
+</script>
+</body>
+</html>

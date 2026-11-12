@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verify a certificate — Okayto</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/forms.css">
+<style>
+body{--fbg:var(--teal);--fink:#F4E6C4}
+.fleft .eyebrow{color:#F4E6C4}
+.why{position:relative;z-index:2;display:flex;flex-direction:column;gap:10px;margin-top:4vh;max-width:380px}
+.why div{display:flex;gap:14px;align-items:baseline;font-size:17px}
+.why b{font-family:var(--display);font-weight:400;font-size:40px;line-height:.8;color:var(--turmeric)}
+.kpick{display:flex;gap:14px;align-items:center;padding:14px;border-radius:22px;background:var(--paper);box-shadow:0 18px 30px -24px rgba(40,25,5,.6)}
+.kpick .plate{width:72px;flex:none}
+.kpick .nm{font-family:var(--display);font-size:32px;line-height:.9;text-transform:uppercase}
+.kpick .mt{font-size:14px;opacity:.75;margin-top:4px}
+</style>
+</head>
+<body>
+<main class="fpage">
+  <section class="fleft" data-dark>
+    <div>
+      <span class="eyebrow">Three diners per certificate</span>
+      <h1 class="display depth" style="margin-top:14px">Verify a<br>certificate.</h1>
+      <p>Halal and gluten-free marks only count on Okayto when three diners have photographed a current certificate. Yours could be the one that tips it.</p>
+      <div class="why"><div><b>01</b>Photograph the certificate on the wall</div><div><b>02</b>Check the expiry date and number</div><div><b>03</b>Send it. We match it with two others</div></div>
+    </div>
+    <div class="art">%PLATE%</div>
+  </section>
+  <section class="fright">
+    <form id="f" novalidate>
+      <h2 class="display">The certificate</h2>
+      <div class="field"><label for="k">Kitchen</label><select id="k"><option value="">Choose a kitchen</option></select><span class="err"></span></div>
+      <div id="kprev"></div>
+      <div class="field"><label>Which mark is it?</label><div class="chips" id="mark"></div><span class="err"></span></div>
+      <div class="field"><label>Photo of the certificate</label><label class="drop" id="drop"><input type="file" accept="image/*" id="ph"><span class="pv">+</span><span><b>Drop a photo or tap to choose</b><span>The whole certificate, readable</span></span></label><span class="err"></span></div>
+      <div class="row2">
+        <div class="field"><label for="no">Certificate number</label><input id="no" placeholder="e.g. HC-2291"><span class="err"></span></div>
+        <div class="field"><label for="ex">Valid until</label><input id="ex" type="date"><span class="err"></span></div>
+      </div>
+      <div class="fbar"><a class="btn ghost" href="index.html#finder">Cancel</a><button class="btn" type="submit">Verify it</button></div>
+    </form>
+    <div class="done" id="done">
+      <span class="eyebrow">Received</span>
+      <h2 class="display depth">You checked<br>the wall.</h2>
+      <div class="stamp" id="stamp"></div>
+      <p id="dmsg"></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="button" id="again">Verify another</button><a class="btn ghost" id="toK" href="index.html">Back to the kitchen</a></div>
+    </div>
+  </section>
+</main>
+<script src="js/data.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/page.js"></script>
+<script src="js/forms.js"></script>
+<script>
+document.querySelector('.art').innerHTML=plate('img/fill_halal.jpg');
+const $=id=>document.getElementById(id),fld=id=>$(id).closest('.field');
+const sel=$('k');OK.R.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=`${r.n} · ${r.area}`;sel.append(o)});
+const pre=OK.q('id');if(pre&&OK.byId(pre))sel.value=pre;
+const mark=F.chips($('mark'),[{label:'Halal',v:'halal',c:OK.diet('halal').tag},{label:'Gluten free',v:'gf',c:OK.diet('gf').tag},{label:'Vegan',v:'vegan',c:OK.diet('vegan').tag}],{multi:false,initial:['halal']});
+F.file($('drop'));
+function kp(){const r=OK.byId(sel.value);$('kprev').innerHTML=r?`<div class="kpick">${plate(r.img)}<div><div class="nm">${r.n}</div><div class="mt">${r.area} · ${r.note}</div></div></div>`:'';F.ok(fld('k'))}
+sel.onchange=kp;kp();
+const today=new Date();$('ex').min=today.toISOString().slice(0,10);
+$('f').addEventListener('submit',e=>{e.preventDefault();let ok=true;
+  ok&=F.check(fld('k'),sel.value,'Which kitchen is the certificate from?');
+  ok&=F.check($('mark').closest('.field'),mark.size>0,'Pick the mark on the certificate.');
+  ok&=F.check($('drop').closest('.field'),$('ph').files.length>0,'Add a photo of the certificate.');
+  ok&=F.check(fld('no'),/^[A-Za-z0-9-\/]{4,}$/.test($('no').value.trim()),'Type the number as printed, at least 4 characters.');
+  const d=$('ex').value?new Date($('ex').value):null;
+  ok&=F.check(fld('ex'),d&&d>today,d?'This certificate has expired. Report it instead.':'When does it expire?');
+  if(!ok){F.firstBad($('f'));return}
+  const r=OK.byId(sel.value),m=[...mark][0];
+  $('stamp').innerHTML=`<div class="ring">Verified<br>by you</div><div class="k">${r.n}</div><div class="m">${OK.diet(m).name} certificate ${$('no').value.trim().toUpperCase()} · valid until ${d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>`;
+  $('dmsg').textContent=`That's 1 of 3. When two more diners confirm it, ${r.n}'s ${OK.diet(m).name.toLowerCase()} mark shows the new date.`;
+  $('toK').href=`restaurant.html?id=${r.id}`;
+  $('f').style.display='none';$('done').classList.add('show');toast('Certificate received. Thank you!');scrollTo({top:0,behavior:'smooth'})});
+$('again').onclick=()=>location.href='verify.html';
+document.querySelectorAll('input,select').forEach(i=>i.addEventListener('input',()=>F.ok(i.closest('.field'))));
+</script>
+</body>
+</html>

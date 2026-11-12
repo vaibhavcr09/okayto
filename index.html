@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Okayto — your rules, packed</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23F2B21B'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' font-family='Impact' fill='%231C1206'%3Eo%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/base.css">
+<style>
+html,body{background:var(--turmeric)}
+
+/* ---------- preloader ---------- */
+#loader{position:fixed;inset:0;z-index:80;background:var(--turmeric);display:grid;place-items:center;clip-path:inset(0 0 0 0)}
+#loader .in{display:flex;flex-direction:column;align-items:center;gap:28px}
+#loader h1{font-size:clamp(48px,9vw,140px);text-align:center}
+#loader .stack{display:flex;flex-direction:column-reverse;gap:6px;width:min(320px,60vw)}
+#loader .stack i{display:block;height:16px;border-radius:20px;background:rgba(28,18,6,.12);overflow:hidden;position:relative}
+#loader .stack i b{position:absolute;inset:0;transform-origin:left;transform:scaleX(0);border-radius:20px;background:var(--ink)}
+#loader .pc{font-family:var(--display);font-size:40px}
+
+/* ---------- story stage ---------- */
+#story{position:relative}
+#stage{position:relative;height:100vh;overflow:hidden;background:var(--turmeric)}
+.bgl{position:absolute;inset:0;clip-path:circle(0px at 50% 50%);will-change:clip-path}
+#blobs{position:absolute;inset:-10%;width:120%;height:120%}
+#blobs path{fill:rgba(28,18,6,.06)}
+#word{position:absolute;left:0;right:0;top:50%;transform:translateY(-54%);display:flex;justify-content:center;color:var(--ink);pointer-events:none;white-space:nowrap;line-height:.8}
+#word span{display:inline-block;will-change:transform;text-shadow:0 .012em 0 rgba(0,0,0,.28),0 .024em 0 rgba(0,0,0,.18),0 .05em .06em rgba(0,0,0,.22),0 .12em .2em rgba(0,0,0,.14)}
+#word span.gap{margin-right:var(--gap,30vw)}
+#tif{position:absolute;left:50%;top:50%;width:min(104vh,100vw);height:min(104vh,100vw);will-change:transform}
+#tif canvas{width:100%;height:100%;display:block;position:relative}
+.tshadow{position:absolute;left:0;top:0;width:100px;height:30px;border-radius:50%;pointer-events:none;will-change:transform,opacity;
+  background:radial-gradient(closest-side,rgba(20,12,2,.62),rgba(20,12,2,.32) 45%,rgba(20,12,2,0));filter:blur(6px)}
+.tshadow.b{background:radial-gradient(closest-side,rgba(20,12,2,.26),rgba(20,12,2,0));filter:blur(18px)}
+#hero-copy{position:absolute;left:var(--g);bottom:clamp(28px,6vh,60px);max-width:380px;font-size:17px;line-height:1.35}
+#hero-copy b{font-weight:600}
+#hero-cta{position:absolute;right:var(--g);bottom:clamp(28px,6vh,60px);display:flex;gap:10px;align-items:center}
+.scrollcue{font:600 13px var(--body);display:flex;gap:10px;align-items:center;background:none;border:none;cursor:pointer}
+.scrollcue i{width:1.5px;height:38px;background:var(--ink);position:relative;overflow:hidden}
+.scrollcue i::after{content:"";position:absolute;left:0;right:0;top:-40%;height:40%;background:var(--turmeric);animation:cue 1.6s infinite}
+@keyframes cue{to{top:100%}}
+#tagline{position:absolute;left:var(--g);bottom:7vh;font-size:clamp(52px,7.4vw,130px);line-height:.86;pointer-events:none}
+#tagline .ln{display:block;overflow:hidden;padding-bottom:.04em}
+#tagline .ln span{display:inline-block;transform:translateY(110%)}
+
+/* the steel plate (portal) — fixed size, animated with transforms only */
+#disc{position:absolute;left:0;top:0;border-radius:50%;opacity:0;will-change:transform;pointer-events:none;z-index:3}
+#disc .cast{position:absolute;inset:6% -4% -14% 10%;border-radius:50%;background:radial-gradient(closest-side,rgba(10,6,0,.5),rgba(10,6,0,.22) 55%,rgba(10,6,0,0));filter:blur(18px);transform:translate(4%,7%)}
+#disc .wall{position:absolute;inset:-3.2%;border-radius:50%;transform:translateY(3.8%);background:linear-gradient(90deg,#5d636a,#d7dbdf 18%,#8a9097 40%,#eef0f2 58%,#7a8087 80%,#b9bec3);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+#disc .rim{position:absolute;inset:-3.2%;border-radius:50%;background:conic-gradient(from 20deg,#f4f6f7,#9aa0a6 12%,#eef0f2 24%,#7d848b 38%,#f8f9fa 52%,#a4aab0 66%,#e9ecee 80%,#8b9197 90%,#f4f6f7)}
+#disc .rim::after{content:"";position:absolute;inset:2.4%;border-radius:50%;background:radial-gradient(circle,#c9cdd1 60%,#6f757b 100%)}
+#disc .bowl{position:absolute;inset:0;border-radius:50%;overflow:hidden}
+#disc .food{position:absolute;inset:0;border-radius:50%;background-size:cover;background-position:center;will-change:transform,clip-path}
+#disc .food+.food{clip-path:circle(0% at 50% 50%)}
+#disc .shade{position:absolute;inset:0;border-radius:50%;pointer-events:none;box-shadow:inset 0 0 0 5px rgba(0,0,0,.22),inset 0 34px 46px -6px rgba(0,0,0,.55),inset 0 -10px 30px rgba(255,255,255,.12);
+  background:radial-gradient(120% 90% at 30% 20%,rgba(255,255,255,.16),transparent 45%)}
+
+/* chapters */
+.ch{position:absolute;inset:0;pointer-events:none}
+.ch .cw{position:absolute;left:var(--g);top:13vh;font-size:clamp(90px,15.5vw,300px);z-index:2}
+.ch .cw .row{display:block;overflow:hidden;padding-bottom:.05em;margin-bottom:-.05em}
+.ch .cw span{display:inline-block;text-shadow:0 .014em 0 rgba(0,0,0,.25),0 .03em 0 rgba(0,0,0,.14),0 .08em .14em rgba(0,0,0,.2)}
+.ch .copy{position:absolute;left:var(--g);bottom:9vh;max-width:min(400px,36vw);z-index:4;pointer-events:auto}
+.ch .copy p{font-size:clamp(17px,1.4vw,21px);line-height:1.35}
+.ch .copy a{display:inline-flex;margin-top:18px;font:600 15px var(--body);padding:12px 18px;border-radius:40px;border:1.5px solid currentColor;text-decoration:none;transition:transform .45s var(--spring)}
+.ch .copy a:hover{transform:translateY(-2px)}
+.ch .meter{display:flex;align-items:flex-end;gap:12px;margin-bottom:22px}
+.ch .meter .n{font-family:var(--display);font-size:clamp(70px,8vw,140px);line-height:.8}
+.ch .meter .l{font-size:14px;font-weight:600;max-width:150px;line-height:1.2;padding-bottom:6px}
+.ch .orbit{position:absolute;inset:0;z-index:4}
+.ch .place{position:absolute;display:flex;align-items:center;gap:12px;max-width:250px;text-decoration:none;color:inherit;pointer-events:auto;transform-origin:left center}
+.ch .place .dot{width:12px;height:12px;border-radius:50%;background:currentColor;box-shadow:0 0 0 6px rgba(255,255,255,.18);flex:none;transition:transform .4s var(--spring)}
+.ch .place:hover .dot{transform:scale(1.5)}
+.ch .place .nm{font-family:var(--display);font-size:clamp(26px,2.4vw,42px);line-height:.9;text-transform:uppercase}
+.ch .place .mt{font-size:13px;font-weight:600;opacity:.8;margin-top:4px;display:block}
+.ch .place .nm{display:block}
+
+#rail{position:absolute;left:50%;top:30px;transform:translateX(-50%);display:flex;gap:22px;align-items:center;font:600 12px var(--body);letter-spacing:.04em;opacity:0;z-index:5}
+#rail button{display:flex;gap:10px;align-items:center;opacity:.45;transition:opacity .4s;background:none;border:none;cursor:pointer;font:inherit;color:inherit}
+#rail button i{width:26px;height:2px;background:currentColor;transform-origin:left;transform:scaleX(.4);transition:transform .5s var(--spring)}
+#rail button.on{opacity:1}#rail button.on i{transform:scaleX(1.6)}
+
+.fl{position:absolute;pointer-events:none;will-change:transform}
+
+/* ---------- finder ---------- */
+#finder{position:relative;background:var(--cream);color:var(--ink);padding:16vh var(--g) 12vh;border-radius:40px 40px 0 0;margin-top:-40px;z-index:5}
+#finder h2{font-size:clamp(80px,15vw,260px)}
+#finder .lead{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;flex-wrap:wrap}
+#finder .lead p{max-width:420px;font-size:19px;line-height:1.35;padding-bottom:14px}
+.fgrid{display:grid;grid-template-columns:minmax(260px,380px) 1fr;gap:clamp(28px,5vw,80px);margin-top:9vh;align-items:start}
+.dabwrap{position:sticky;top:110px}
+.dabba{position:relative;display:flex;flex-direction:column-reverse;gap:6px;user-select:none}
+.band{position:relative;height:96px;border-radius:18px 18px 22px 22px;cursor:pointer;border:none;text-align:left;padding:0 26px;display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg,#f7f8f9 0%,#c4c9ce 18%,#eef0f2 38%,#9fa6ad 62%,#e3e6e9 82%,#b3b9bf 100%);color:#1d2227;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.9),inset 0 -3px 6px rgba(0,0,0,.18),0 3px 2px rgba(0,0,0,.18),0 14px 22px -10px rgba(40,25,5,.45),0 30px 40px -22px rgba(40,25,5,.35);transition:transform .7s var(--spring),box-shadow .5s}
+.band::before{content:"";position:absolute;left:10px;right:10px;top:-5px;height:10px;border-radius:10px;background:linear-gradient(180deg,#fff,#a7adb3);box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.band .bn{font-family:var(--display);font-size:42px;line-height:1;text-transform:uppercase;transition:color .3s}
+.band .bs{font:600 12px var(--body);text-align:right;max-width:120px;opacity:.7}
+.band .peek{position:absolute;left:14px;right:14px;top:-2px;height:0;border-radius:50% 50% 0 0/100% 100% 0 0;background-size:cover;background-position:center;transition:height .5s var(--spring)}
+.band[aria-pressed=true]{transform:translateX(26px) rotate(-1.2deg);box-shadow:inset 0 2px 0 rgba(255,255,255,.9),inset 0 -3px 6px rgba(0,0,0,.18),0 6px 4px rgba(0,0,0,.14),-14px 26px 34px -10px rgba(40,25,5,.45)}
+.band[aria-pressed=true] .peek{height:12px}
+.band[aria-pressed=true] .bn{color:var(--c)}
+.dabba .handle{height:58px;margin:0 26px -6px;border:7px solid #b9bfc5;border-bottom:none;border-radius:60px 60px 0 0;order:99}
+.excl{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.fbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.count{font-family:var(--display);font-size:clamp(60px,6vw,110px);line-height:.8;display:flex;align-items:flex-end;gap:16px;margin-bottom:26px}
+.count small{font:600 16px var(--body);line-height:1.2;padding-bottom:8px;max-width:220px}
+.results{border-top:2px solid var(--ink)}
+.res{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:end;padding:22px 0 20px;border-bottom:2px solid rgba(28,18,6,.14);position:relative;text-decoration:none;color:inherit;transition:opacity .5s,transform .7s var(--spring)}
+.res .nm{font-family:var(--display);font-size:clamp(44px,5.6vw,96px);line-height:.85;text-transform:uppercase;transition:transform .5s var(--spring)}
+.res:hover .nm{transform:translateX(14px)}
+.res .mt{font-size:15px;line-height:1.35;margin-top:10px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.res .mt .warn{color:#B3341C;font-weight:600}
+.res .km{font-family:var(--display);font-size:clamp(36px,3.4vw,60px);text-align:right;line-height:.85}
+.res .km small{display:block;font:600 13px var(--body);margin-top:6px}
+.res.out{opacity:.25}
+.res.out .nm{text-decoration:line-through;text-decoration-thickness:.06em;text-decoration-color:#E0452B}
+.empty{padding:40px 0;font-size:19px}
+#peekimg{position:fixed;width:220px;height:220px;border-radius:50%;pointer-events:none;z-index:30;background-size:cover;background-position:center;opacity:0;transform:translate(-50%,-50%) scale(.6);transition:opacity .25s,transform .45s var(--spring);box-shadow:0 0 0 8px #e6e8ea,0 30px 50px -20px rgba(0,0,0,.5)}
+
+@media (max-width:820px){
+  #hero-copy{max-width:80vw;font-size:15px;bottom:96px}
+  #hero-cta{left:16px;right:auto;bottom:40px}
+  .ch .cw{top:11vh}
+  .ch .copy{max-width:none;right:16px;bottom:3.5vh}
+  .ch .copy p{font-size:15px}
+  .ch .copy a{display:none}
+  .ch .meter{display:none}
+  .fl{max-width:20vw}
+  .ch .place .mt{display:none}
+  .ch .place .nm{font-size:20px}
+  #rail{display:none}
+  .fgrid{grid-template-columns:1fr}
+  .dabwrap{position:relative;top:0}
+  .band{height:74px}.band .bn{font-size:32px}
+  #peekimg{display:none}
+}
+@media (max-width:1100px){#rail{display:none}}
+</style>
+</head>
+<body>
+<div id="loader"><div class="in"><h1 class="display">Packing your dabba</h1><div class="stack"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div><div class="pc" id="pc">0%</div></div></div>
+
+<section id="story">
+  <div id="stage">
+    <div id="bgs"></div>
+    <svg id="blobs" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice"><g id="blobg">
+      <path d="M180,140 C300,40 520,80 560,220 C600,360 420,430 300,400 C160,365 60,240 180,140Z"/>
+      <path d="M820,520 C930,420 1130,470 1150,610 C1170,750 980,800 880,760 C760,712 710,620 820,520Z"/>
+      <path d="M900,60 C1010,10 1150,70 1130,170 C1110,270 990,290 930,240 C860,180 800,110 900,60Z"/>
+      <path d="M90,560 C170,500 300,540 300,640 C300,740 160,770 100,720 C40,670 10,620 90,560Z"/></g></svg>
+    <div id="word" class="display"></div>
+    <div id="floats"></div>
+    <div id="tif"><div class="tshadow" id="tshadow"></div><div class="tshadow b" id="tshadow2"></div><canvas id="cv"></canvas></div>
+    <div id="disc"><div class="cast"></div><div class="wall"></div><div class="rim"></div><div class="bowl" id="bowl"></div><div class="shade"></div></div>
+    <div id="chapters"></div>
+    <div id="tagline" class="display"><span class="ln"><span>Four rules.</span></span><span class="ln"><span>One dabba.</span></span></div>
+    <div id="hero-copy"><b>Gluten-free, vegan, halal, keto.</b> 214 Bengaluru kitchens, checked dish by dish, so lunch fits your rules without the twenty questions.</div>
+    <div id="hero-cta"><button class="scrollcue" id="cue" type="button"><i></i>Scroll to open</button></div>
+    <div id="rail"></div>
+  </div>
+</section>
+
+<section id="finder">
+  <div class="lead"><h2 class="display depth">Pack your<br>dabba.</h2><p>Stack the rules you eat by. Strike what you can't have. The kitchens that pass every tier rise to the top.</p></div>
+  <div class="fgrid">
+    <div class="dabwrap">
+      <div class="dabba" id="dabba"><div class="handle"></div></div>
+      <div class="excl" id="excl"></div>
+      <div class="fbar"><button class="chip" id="openNow" type="button" aria-pressed="false">Open now</button><button class="chip" id="savedOnly" type="button" aria-pressed="false">Saved only</button><button class="chip" id="reset" type="button">Reset</button></div>
+    </div>
+    <div>
+      <div class="count"><span id="cnt">3</span><small>kitchens fit everything in your dabba</small></div>
+      <div class="results" id="results"></div>
+      <div class="fbar" style="margin-top:28px"><a class="btn" id="toMap" href="map.html">See them on the map</a><a class="btn ghost" href="add.html">Missing a kitchen? Add it</a></div>
+    </div>
+  </div>
+</section>
+<div id="peekimg"></div>
+
+<script src="js/data.js"></script>
+<script src="js/chrome.js"></script>
+<script src="lib/gsap.min.js"></script>
+<script src="lib/ScrollTrigger.min.js"></script>
+<script src="lib/lenis.min.js"></script>
+<script src="frames/tiers.js"></script>
+<script>
+const CAPTURE = /capture/.test(location.search);
+const NF = 180, FR = i => `frames/f_${String(i).padStart(4,'0')}.webp`;
+const CH = OK.DIETS.map((d,i)=>({...d, tier:i, word:d.name.split(' '),
+  places: OK.R.filter(r=>OK.fitsDiet(r,d.k)).slice(0, i===0?3:2)}));
+const FLOATS=[['el_curry.png',.12,.2,150,-18,1.4],['el_chili.png',.82,.18,190,32,1.1],['el_cardamom.png',.66,.86,110,10,1.5],['el_staranise.png',.08,.72,120,0,.8],
+  ['el_coriander.png',.8,.84,170,-24,1.3],['el_lime.png',.92,.5,150,12,1.7],['el_millet.png',.62,.1,140,0,.6],['el_chickpea.png',.36,.12,110,0,1.0]];
+
+/* ---------- frames (preloaded + pre-decoded so scrubbing never stalls) ---------- */
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');const frames=[];let loaded=0,cur=0;
+function sizeCanvas(){const r=cv.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);const c=cur;cur=0;draw(c||1)}
+function draw(i){i=Math.max(1,Math.min(NF,Math.round(i)));if(i===cur)return;const im=frames[i];if(!im||!im.complete||!im.naturalWidth)return;cur=i;ctx.clearRect(0,0,cv.width,cv.height);ctx.drawImage(im,0,0,cv.width,cv.height);placeShadow(i)}
+function placeShadow(i){const T=window.TIERS&&window.TIERS[i];if(!T)return;const W=cv.clientWidth;const [x,y,r]=T[0];const lift=Math.max(0,Math.min(1,(i-70)/70));
+  const sh=document.getElementById('tshadow'),sh2=document.getElementById('tshadow2');const w=r*W*2.25*(1+lift*.25),h=w*.2;
+  const by=(y+r*.93)*W-h*.5;sh.style.width=w+'px';sh.style.height=h+'px';sh.style.transform=`translate(${x*W-w/2+w*.04}px,${by+lift*W*.05}px)`;sh.style.opacity=1-lift*.75;
+  const w2=w*1.6;sh2.style.width=w2+'px';sh2.style.height=w2*.24+'px';sh2.style.transform=`translate(${x*W-w2/2+w*.12}px,${by+lift*W*.08}px)`;sh2.style.opacity=.9-lift*.3}
+const bars=[...document.querySelectorAll('#loader .stack b')];
+function progress(){const p=loaded/NF;document.getElementById('pc').textContent=Math.round(p*100)+'%';bars.forEach((b,i)=>b.style.transform=`scaleX(${Math.max(0,Math.min(1,p*4-i))})`)}
+const ready=new Promise(res=>{for(let i=1;i<=NF;i++){const im=new Image();im.decoding='async';
+  im.onload=()=>{(im.decode?im.decode():Promise.resolve()).catch(()=>{}).then(()=>{loaded++;progress();if(loaded===NF)res()})};
+  im.onerror=()=>{loaded++;progress();if(loaded===NF)res()};im.src=FR(i);frames[i]=im}});
+
+/* ---------- build DOM ---------- */
+const word=document.getElementById('word');
+'okayto'.split('').forEach((c,i)=>{const s=document.createElement('span');s.textContent=c;if(i===2)s.className='gap';s.dataset.side=i<3?-1:1;word.append(s)});
+function sizeWord(){const tw=document.getElementById('tif').getBoundingClientRect().width;const gap=tw*.36;
+  const fs=Math.min(innerWidth*.22,(innerWidth*.94-gap)/(6*.5),520);word.style.fontSize=fs+'px';word.style.setProperty('--gap',gap+'px')}
+const bgs=document.getElementById('bgs');
+[...CH.map(c=>c.bg),'#F2B21B'].forEach((col,i)=>{const d=document.createElement('div');d.className='bgl';d.style.background=col;d.id='bgl'+i;bgs.append(d)});
+const fl=document.getElementById('floats');
+FLOATS.forEach(([src,x,y,w,r,d])=>{if(innerWidth<820&&y>.78)return;const im=new Image();im.src='img/'+src;im.alt='';im.className='fl';
+  im.style.cssText=`left:${x*100}%;top:${y*100}%;width:${w}px`;im.dataset.d=d;im.dataset.r=r;
+  const sx=Math.round(8*d),sy=Math.round(16*d+8),sb=Math.round(10*d+6);
+  im.style.filter=`drop-shadow(1px 3px 2px rgba(20,12,2,.35)) drop-shadow(${sx}px ${sy}px ${sb}px rgba(20,12,2,${(.34-d*.06).toFixed(2)}))`;
+  im.style.zIndex=d>1.3?6:1;fl.append(im)});
+gsap.set('.fl',{xPercent:-50,yPercent:-50,rotation:(i,e)=>+e.dataset.r});
+const bowl=document.getElementById('bowl');
+CH.forEach(c=>{const f=document.createElement('div');f.className='food';f.style.backgroundImage=`url(${c.fill})`;bowl.append(f)});
+const foods=[...bowl.children];
+const chs=document.getElementById('chapters'),rail=document.getElementById('rail');
+CH.forEach((c,i)=>{
+  const el=document.createElement('div');el.className='ch';el.id='ch-'+c.k;el.style.color=c.ink;
+  el.innerHTML=`<div class="cw display">${c.word.map(w=>`<span class="row">${w.split('').map(ch=>`<span>${ch}</span>`).join('')}</span>`).join('')}</div>
+   <div class="copy"><div class="meter"><span class="n">${c.nfrom||0}</span><span class="l">${c.nl}</span></div><p>${c.line}</p><a href="diet.html?d=${c.k}">Every ${c.name.toLowerCase()} kitchen →</a></div>
+   <div class="orbit">${c.places.map(p=>`<a class="place" href="restaurant.html?id=${p.id}&d=${c.k}"><span class="dot"></span><span><span class="nm">${p.n}</span><span class="mt">${p.km} km · ${p.note}</span></span></a>`).join('')}</div>`;
+  chs.append(el);
+  const r=document.createElement('button');r.type='button';r.innerHTML=`${c.name}<i></i>`;r.onclick=()=>jumpTo(c.k);rail.append(r);
+});
+
+/* ---------- geometry ---------- */
+const tifEl=document.getElementById('tif'),disc=document.getElementById('disc');
+function tierScreen(frame,t){const T=window.TIERS&&window.TIERS[frame];const r=tifEl.getBoundingClientRect();if(!T)return{x:innerWidth/2,y:innerHeight/2,r:60};const [nx,ny,nr]=T[t];return{x:r.left+nx*r.width,y:r.top+ny*r.height,r:nr*r.width}}
+function target(){const m=innerWidth<820;const D=m?Math.min(innerWidth*.8,innerHeight*.38):Math.min(innerHeight*.72,innerWidth*.42);return{x:m?innerWidth/2:innerWidth*.565,y:m?innerHeight*.53:innerHeight*.53,r:D/2}}
+function layoutDisc(){const t=target();disc.style.width=disc.style.height=(t.r*2)+'px';disc.style.left=(t.x-t.r)+'px';disc.style.top=(t.y-t.r)+'px'}
+// where tier t sits on screen in the exploded state (#tif at scale .8, yPercent -46), computed analytically so it is exact
+function tierAt(t){const S=Math.min(innerHeight*1.04,innerWidth),cx=innerWidth/2,cy=innerHeight/2+.04*S,k=.8;const [nx,ny,nr]=window.TIERS[NF][t];
+  return{x:cx+(nx-.5)*S*k,y:cy+(ny-.5)*S*k,r:nr*S*k}}
+function fromTier(t){const T=target(),a=tierAt(t);return{x:a.x-T.x,y:a.y-T.y,scale:a.r/T.r}}
+function placeOrbit(el){const t=target(),m=innerWidth<820;const pl=[...el.querySelectorAll('.place')];
+  const angs=pl.length===3?[-40,0,40]:[-24,30];pl.forEach((p,i)=>{const a=angs[i]*Math.PI/180;const R=t.r+44;
+    let x=t.x+Math.cos(a)*R,y=t.y+Math.sin(a)*R;if(m){x=20;y=t.y+t.r+40+i*30}
+    p.style.left=x+'px';p.style.top=(y-14)+'px'})}
+const circ=(r,x,y)=>`circle(${r} at ${x}px ${y}px)`;
+
+/* ---------- smooth scroll ---------- */
+gsap.registerPlugin(ScrollTrigger);
+let lenis=null;
+if(!CAPTURE){lenis=new Lenis({lerp:.1,wheelMultiplier:.9});lenis.on('scroll',ScrollTrigger.update);gsap.ticker.add(t=>lenis.raf(t*1000));gsap.ticker.lagSmoothing(0)}
+const goTo=(y)=>lenis?lenis.scrollTo(y,{duration:1.6}):scrollTo({top:y,behavior:'smooth'});
+document.querySelectorAll('[data-go=finder]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();goTo(document.getElementById('finder').offsetTop)}));
+document.getElementById('cue').onclick=()=>goTo(innerHeight*3.2);
+let ST=null,LABELS={};
+function jumpTo(k){if(!ST)return;const t=LABELS[k];goTo(ST.start+(ST.end-ST.start)*(t/tlDur))}
+
+/* ---------- the story ---------- */
+let tlDur=1;
+function build(){
+  gsap.set('#tif',{xPercent:-50,yPercent:-50});
+  sizeWord();sizeCanvas();draw(1);layoutDisc();
+  const state={f:1};const T=target();
+  const tl=gsap.timeline({defaults:{ease:'none'}});
+  const nav=document.getElementById('nav');
+  const theme=(k)=>()=>{[...rail.children].forEach((r,i)=>r.classList.toggle('on',CH[i].k===k));nav.classList.toggle('light',['vegan','halal','keto'].includes(k))};
+  const left=[...word.children].filter(s=>s.dataset.side<0),right=[...word.children].filter(s=>s.dataset.side>0);
+
+  // 0–1 HERO: slow turn
+  tl.to(state,{f:40,duration:1,onUpdate:()=>draw(state.f)},0)
+    .to('.fl',{y:(i,e)=>-90*e.dataset.d,rotation:(i,e)=>+e.dataset.r+24*e.dataset.d,duration:1},0)
+    .to(['#hero-copy','#hero-cta'],{autoAlpha:0,y:-24,duration:.35},.45);
+  // 1–2.7 BURST: word halves slide fully off-screen (no fades), tiffin opens, tagline wipes in
+  tl.to(state,{f:NF,duration:1.6,onUpdate:()=>draw(state.f)},1)
+    .to(left,{x:()=>-innerWidth*.75,rotation:-6,duration:.8,ease:'power2.in',stagger:{each:.05,from:'end'}},1)
+    .to(right,{x:()=>innerWidth*.75,rotation:6,duration:.8,ease:'power2.in',stagger:.05},1)
+    .to('#tif',{scale:.8,yPercent:-46,duration:1.4,ease:'power2.inOut'},1.1)
+    .to('.fl',{y:(i,e)=>-380*e.dataset.d,x:(i,e)=>(parseFloat(e.style.left)>50?1:-1)*120*e.dataset.d,duration:1.6},1)
+    .to('#tagline .ln span',{y:'0%',duration:.45,stagger:.12,ease:'power3.out'},1.75)
+    .to('#tagline .ln span',{y:'-110%',duration:.35,stagger:.08,ease:'power2.in'},2.45);
+
+  // 2.8 DIVE into tier 0
+  let t=2.8;
+  const ft0=fromTier(0);
+  tl.set(disc,{opacity:1,x:ft0.x,y:ft0.y,scale:ft0.scale,rotation:-30},t)
+    .to('#tif',{yPercent:-240,scale:1.05,duration:.55,ease:'power3.in'},t+.08)
+    .to(disc,{x:0,y:0,scale:1,rotation:0,duration:.75,ease:'power3.inOut'},t)
+    .fromTo('#bgl0',{clipPath:()=>{const a=tierAt(0);return circ('0px',a.x,a.y)}},{clipPath:()=>circ(Math.hypot(innerWidth,innerHeight)+'px',T.x,T.y),duration:.75,ease:'power2.in',immediateRender:false},t)
+    .to('#rail',{opacity:1,duration:.3},t+.4)
+    .to('.fl',{opacity:0,duration:.3},t);
+  t+=.75;
+
+  CH.forEach((c,i)=>{
+    const el=document.getElementById('ch-'+c.k),letters=el.querySelectorAll('.cw span span'),places=el.querySelectorAll('.place'),meter=el.querySelector('.n'),copy=el.querySelector('.copy');
+    gsap.set(letters,{yPercent:115});gsap.set(places,{scale:0,opacity:0});gsap.set(copy,{opacity:0,y:30});gsap.set(el,{visibility:'hidden'});
+    if(i>0){ // SWAP: new food wipes open from the centre while the plate turns; new colour wipes out from the plate
+      tl.fromTo(foods[i],{clipPath:'circle(0% at 50% 50%)',rotation:-40},{clipPath:'circle(72% at 50% 50%)',rotation:0,duration:.6,ease:'power2.inOut',immediateRender:false},t)
+        .to(disc,{rotation:'+=90',duration:.6,ease:'power2.inOut'},t)
+        .fromTo('#bgl'+i,{clipPath:circ('0px',T.x,T.y)},{clipPath:circ(Math.hypot(innerWidth,innerHeight)+'px',T.x,T.y),duration:.6,ease:'power2.in',immediateRender:false},t);
+      t+=.45;
+    }
+    LABELS[c.k]=t+.35;
+    tl.call(theme(c.k),null,t).set(el,{visibility:'visible'},t)
+      .to('#rail',{color:c.ink,duration:.3},t)
+      .to('#blobs path',{fill:c.ink==='#1C1206'?'rgba(28,18,6,.06)':'rgba(255,255,255,.07)',duration:.3},t)
+      .to('#blobg',{rotation:'+=30',transformOrigin:'50% 50%',duration:2.2},t)
+      .to(letters,{yPercent:0,duration:.5,stagger:.035,ease:'power3.out'},t)
+      .call(()=>placeOrbit(el),null,t)
+      .to(places,{scale:1,opacity:1,duration:.35,stagger:.1,ease:'back.out(2)'},t+.2)
+      .to(copy,{opacity:1,y:0,duration:.35},t+.15)
+      .fromTo(meter,{innerText:c.nfrom||0},{innerText:c.n,duration:.6,snap:{innerText:1},immediateRender:false},t+.15)
+      .to(foods[i],{rotation:'+=24',duration:1.6},t)
+      // exit: text leaves upward through its mask, cleanly, before the next swap
+      .to(letters,{yPercent:-115,duration:.35,stagger:.025,ease:'power2.in'},t+1.45)
+      .to([...places,copy],{opacity:0,y:-16,duration:.25},t+1.45)
+      .set(el,{visibility:'hidden'},t+1.85);
+    t+=1.85;
+  });
+
+  // RETURN: the plate spins down into the top tier while the tiffin comes back into view; colour wipes back to turmeric
+  const ftN=fromTier(3);
+  tl.to(disc,{x:ftN.x,y:ftN.y,scale:ftN.scale,rotation:'+=120',duration:.7,ease:'power3.inOut'},t)
+    .fromTo('#tif',{yPercent:-240,scale:1.05},{yPercent:-46,scale:.8,duration:.55,ease:'power3.out',immediateRender:false},t)
+    .to(disc,{opacity:0,duration:.08},t+.66)
+    .fromTo('#bgl4',{clipPath:circ('0px',T.x,T.y)},{clipPath:()=>circ(Math.hypot(innerWidth,innerHeight)+'px',innerWidth/2,innerHeight/2),duration:.7,ease:'power2.in',immediateRender:false},t)
+    .call(theme(''),null,t+.1).to('#rail',{opacity:0,duration:.25},t+.1)
+    .to('#blobs path',{fill:'rgba(28,18,6,.06)',duration:.3},t);
+  t+=.8;
+  // RESTACK and the wordmark slides back in
+  tl.to(state,{f:1,duration:1.3,ease:'power1.inOut',onUpdate:()=>draw(state.f)},t)
+    .to('#tif',{scale:1,yPercent:-50,duration:1.1,ease:'power2.inOut'},t+.1)
+    .to('.fl',{opacity:1,y:0,x:0,duration:1},t+.2)
+    .to(left,{x:0,rotation:0,duration:.8,ease:'power3.out',stagger:.05},t+.6)
+    .to(right,{x:0,rotation:0,duration:.8,ease:'power3.out',stagger:{each:.05,from:'end'}},t+.6);
+  t+=1.5;
+  tlDur=tl.duration();window.__total=tlDur;window.__labels=LABELS;
+  ST=ScrollTrigger.create({animation:tl,trigger:'#story',start:'top top',end:()=>'+='+Math.round(innerHeight*tlDur*.95),scrub:CAPTURE?true:.6,pin:'#stage',anticipatePin:1,invalidateOnRefresh:true});
+  // footer tiffin settles as the footer arrives
+  const ft=document.querySelector('.foot .big img');
+  if(ft)gsap.fromTo(ft,{y:60,rotation:20},{y:0,rotation:8,scrollTrigger:{trigger:'.foot',start:'top bottom',end:'bottom bottom',scrub:true}});
+  // nav turns solid over the finder so pills never sit on content
+  ScrollTrigger.create({trigger:'#finder',start:'top 90px',onToggle:s=>nav.classList.toggle('solid',s.isActive||s.progress>0),onLeaveBack:()=>nav.classList.remove('solid')});
+  ScrollTrigger.refresh();
+}
+
+/* pointer parallax (desktop) */
+if(matchMedia('(pointer:fine)').matches)addEventListener('pointermove',e=>{const nx=e.clientX/innerWidth-.5,ny=e.clientY/innerHeight-.5;
+  gsap.to('#floats',{x:nx*24,y:ny*18,duration:1.2,overwrite:'auto'});
+  gsap.to('#tif canvas',{x:-nx*10,y:-ny*8,duration:1.2,overwrite:'auto'})});
+let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{sizeWord();sizeCanvas();layoutDisc();ScrollTrigger.refresh()},150)});
+addEventListener('scroll',()=>{pk.style.opacity=0},{passive:true});
+
+/* ---------- finder ---------- */
+const sel=new Set(['halal']),ex=new Set();let openNow=false,savedOnly=false;
+const dab=document.getElementById('dabba');
+CH.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='band';b.style.setProperty('--c',c.tag);
+  b.innerHTML=`<span class="peek" style="background-image:url(${c.fill})"></span><span class="bn">${c.name}</span><span class="bs">${c.nl}</span>`;
+  b.setAttribute('aria-pressed',sel.has(c.k));b.onclick=()=>{sel.has(c.k)?sel.delete(c.k):sel.add(c.k);b.setAttribute('aria-pressed',sel.has(c.k));renderRes()};dab.prepend(b)});
+const exEl=document.getElementById('excl');OK.ALLERGENS.forEach(a=>{const b=document.createElement('button');b.type='button';b.className='chip x';b.textContent='No '+a.toLowerCase();b.setAttribute('aria-pressed',false);
+  b.onclick=()=>{ex.has(a)?ex.delete(a):ex.add(a);b.setAttribute('aria-pressed',ex.has(a));renderRes()};exEl.append(b)});
+const tgl=(id,fn)=>{const b=document.getElementById(id);b.onclick=()=>{const v=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',v);fn(v);renderRes()}};
+tgl('openNow',v=>openNow=v);tgl('savedOnly',v=>savedOnly=v);
+document.getElementById('reset').onclick=()=>{sel.clear();ex.clear();openNow=savedOnly=false;document.querySelectorAll('#finder [aria-pressed]').forEach(b=>b.setAttribute('aria-pressed',false));renderRes();toast('Dabba emptied')};
+const isOpen=r=>{const h=new Date().getHours();const m=r.open.match(/(\d+)(?::\d+)?\s*(pm|am)?|midnight/);if(/midnight/.test(r.open))return h>=8;const close=+m[1]+(m[2]==='pm'||!m[2]?12:0);return h>=8&&h<close};
+function fits(r){for(const d of sel)if(!OK.fitsDiet(r,d))return false;for(const a of ex)if(r.al.includes(a))return false;if(openNow&&!isOpen(r))return false;if(savedOnly&&!OK.saved.has(r.id))return false;return true}
+function renderRes(){const box=document.getElementById('results');const list=[...OK.R].sort((a,b)=>(fits(b)-fits(a))||a.km-b.km);let n=0;box.innerHTML='';
+  list.forEach(r=>{const ok=fits(r);if(ok)n++;const el=document.createElement('a');el.className='res'+(ok?'':' out');el.dataset.img=r.img;
+    el.href=`restaurant.html?id=${r.id}${sel.size?'&d='+[...sel][0]:''}`;
+    el.innerHTML=`<div><div class="nm">${r.n}</div><div class="mt">${r.d.map(d=>`<span class="tag" style="--c:${OK.diet(d).tag}">${OK.diet(d).name}</span>`).join('')}<span>${r.area} · ${r.note}</span>${r.warn?`<span class="warn">${r.warn}</span>`:''}</div></div><div class="km">${r.km.toFixed(1)}<small>km · ${r.open.toLowerCase()}</small></div>`;
+    box.append(el)});
+  if(!n){const e=document.createElement('div');e.className='empty';e.textContent='Nothing fits every tier yet. Try lifting a rule, or add a kitchen you know.';box.prepend(e)}
+  gsap.from('#results .res',{y:24,opacity:0,duration:.5,stagger:.04,ease:'power3.out',clearProps:'opacity,transform'});
+  document.getElementById('cnt').textContent=n;
+  const q=[...sel].join(',');document.getElementById('toMap').href='map.html'+(q?`?d=${q}`:'')+(savedOnly?(q?'&':'?')+'saved=1':'')}
+renderRes();
+const pk=document.getElementById('peekimg');
+document.getElementById('results').addEventListener('pointermove',e=>{const r=e.target.closest('.res');if(!r){pk.style.opacity=0;return}pk.style.backgroundImage=`url(${r.dataset.img})`;pk.style.left=e.clientX+'px';pk.style.top=e.clientY+'px';pk.style.opacity=1;pk.style.transform='translate(-50%,-50%) scale(1)'});
+document.getElementById('results').addEventListener('pointerleave',()=>{pk.style.opacity=0;pk.style.transform='translate(-50%,-50%) scale(.6)'});
+
+/* ---------- boot ---------- */
+Promise.all([ready,document.fonts.ready]).then(()=>{
+  build();
+  if(location.hash==='#finder')setTimeout(()=>goTo(document.getElementById('finder').offsetTop),300);
+  if(CAPTURE){document.getElementById('loader').remove();window.__ready=true;return}
+  gsap.timeline().to('#loader .in',{y:-40,opacity:0,duration:.5,delay:.2}).to('#loader',{clipPath:'inset(0 0 100% 0)',duration:.9,ease:'power4.inOut'},'-=.1')
+    .from('#word span',{yPercent:120,duration:1,stagger:.06,ease:'power4.out'},'-=.5').from('#tif',{y:120,opacity:0,duration:1.1,ease:'power3.out'},'<')
+    .from('.fl',{scale:0,duration:.8,stagger:.05,ease:'back.out(2)'},'-=.8').set('#loader',{display:'none'});
+});
+</script>
+</body>
+</html>

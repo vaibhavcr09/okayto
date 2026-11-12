@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Report cross-contact — Okayto</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/forms.css">
+<style>
+body{--fbg:var(--chilli);--fink:#FFF1E0}
+.fleft .big{font-family:var(--display);font-size:clamp(120px,14vw,240px);line-height:.8;position:relative;z-index:2;opacity:.18;margin-top:3vh}
+.counter{width:100%;display:flex;justify-content:flex-end;font:600 13px var(--body);opacity:.65}
+</style>
+</head>
+<body>
+<main class="fpage">
+  <section class="fleft" data-dark>
+    <div>
+      <span class="eyebrow">Something wasn't right</span>
+      <h1 class="display depth" style="margin-top:14px">Report<br>cross-<br>contact.</h1>
+      <p>Shared fryers, a spoon of ghee, an expired certificate. Tell us what happened. Every report goes to the kitchen and is shown on its page until it's fixed.</p>
+    </div>
+    <div class="art">%PLATE%</div>
+  </section>
+  <section class="fright">
+    <form id="f" novalidate>
+      <h2 class="display">What happened?</h2>
+      <div class="field"><label for="k">Kitchen</label><select id="k"><option value="">Choose a kitchen</option></select><span class="err"></span></div>
+      <div class="field"><label>The problem</label>
+        <div class="radios" id="kind">
+          <label class="rcard"><input type="radio" name="kind" value="fryer"><div class="t">Shared fryer</div><div class="d">Fried in the same oil as something you avoid</div></label>
+          <label class="rcard"><input type="radio" name="kind" value="hidden"><div class="t">Hidden ingredient</div><div class="d">Ghee, maida, egg or meat stock not on the menu</div></label>
+          <label class="rcard"><input type="radio" name="kind" value="cert"><div class="t">Wrong certificate</div><div class="d">Expired, missing or for a different kitchen</div></label>
+          <label class="rcard"><input type="radio" name="kind" value="other"><div class="t">Something else</div><div class="d">Tell us in the details</div></label>
+        </div><span class="err"></span></div>
+      <div class="row2">
+        <div class="field"><label for="dish">Dish</label><select id="dish"><option value="">Pick the kitchen first</option></select><span class="err"></span></div>
+        <div class="field"><label for="dt">When</label><input id="dt" type="date"><span class="err"></span></div>
+      </div>
+      <div class="field"><label for="det">Details</label><textarea id="det" rows="5" maxlength="600" placeholder="What did you order, what did you ask for, what happened?"></textarea><div class="counter"><span id="cc">0</span>/600</div><span class="err"></span></div>
+      <div class="fbar"><a class="btn ghost" href="index.html#finder">Cancel</a><button class="btn" type="submit">Send report</button></div>
+    </form>
+    <div class="done" id="done">
+      <span class="eyebrow">Report logged</span>
+      <h2 class="display depth">Thanks for<br>telling us.</h2>
+      <p id="dmsg"></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn" id="toK" href="index.html">See the kitchen</a><button class="btn ghost" type="button" id="again">Report something else</button></div>
+    </div>
+  </section>
+</main>
+<script src="js/data.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/page.js"></script>
+<script src="js/forms.js"></script>
+<script>
+document.querySelector('.art').innerHTML=plate('img/fill_keto.jpg');
+const $=id=>document.getElementById(id),fld=id=>$(id).closest('.field');
+const sel=$('k');OK.R.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=`${r.n} · ${r.area}`;sel.append(o)});
+function dishes(){const r=OK.byId(sel.value);$('dish').innerHTML=r?`<option value="">Choose a dish</option>${r.dishes.map(d=>`<option>${d.n}</option>`).join('')}<option>Something not listed</option>`:'<option value="">Pick the kitchen first</option>';F.ok(fld('k'))}
+sel.onchange=dishes;const pre=OK.q('id');if(pre&&OK.byId(pre))sel.value=pre;dishes();
+const t=new Date().toISOString().slice(0,10);$('dt').max=t;$('dt').value=t;
+$('det').addEventListener('input',()=>$('cc').textContent=$('det').value.length);
+$('kind').addEventListener('change',()=>F.ok($('kind').closest('.field')));
+$('f').addEventListener('submit',e=>{e.preventDefault();let ok=true;
+  const kind=document.querySelector('input[name=kind]:checked');
+  ok&=F.check(fld('k'),sel.value,'Which kitchen was it?');
+  ok&=F.check($('kind').closest('.field'),kind,'Pick what happened.');
+  ok&=F.check(fld('dish'),$('dish').value,'Which dish?');
+  ok&=F.check(fld('dt'),$('dt').value&&$('dt').value<=t,'Pick the day it happened.');
+  ok&=F.check(fld('det'),$('det').value.trim().length>=20,'A little more detail helps the kitchen fix it (20 characters or more).');
+  if(!ok){F.firstBad($('f'));return}
+  const r=OK.byId(sel.value);
+  $('dmsg').textContent=`Report #${Math.floor(1000+Math.random()*9000)} for ${r.n}: “${kind.closest('.rcard').querySelector('.t').textContent}” on ${$('dish').value}. We've flagged it on their page and asked the kitchen to respond within 7 days.`;
+  $('toK').href=`restaurant.html?id=${r.id}`;
+  $('f').style.display='none';$('done').classList.add('show');toast('Report sent. Thank you.');scrollTo({top:0,behavior:'smooth'})});
+$('again').onclick=()=>location.href='report.html'+(sel.value?`?id=${sel.value}`:'');
+document.querySelectorAll('input,select,textarea').forEach(i=>i.addEventListener('input',()=>F.ok(i.closest('.field'))));
+</script>
+</body>
+</html>

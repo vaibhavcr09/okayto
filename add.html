@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add a kitchen — Okayto</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/forms.css">
+<style>
+body{--fbg:var(--turmeric);--fink:var(--ink)}
+.tiers{position:relative;z-index:2;display:flex;flex-direction:column-reverse;gap:6px;width:min(340px,80%);margin-top:4vh}
+.tier{height:58px;border-radius:14px 14px 18px 18px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-family:var(--display);font-size:26px;text-transform:uppercase;color:#1d2227;
+  background:linear-gradient(180deg,#f7f8f9 0%,#c4c9ce 18%,#eef0f2 38%,#9fa6ad 62%,#e3e6e9 82%,#b3b9bf 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.9),inset 0 -3px 6px rgba(0,0,0,.18),0 3px 2px rgba(0,0,0,.16),0 16px 22px -12px rgba(40,25,5,.5);
+  transform:translateY(-30px) scale(.9);opacity:.25;transition:transform .8s var(--spring),opacity .4s}
+.tier small{font:600 13px var(--body)}
+.tier.on{transform:none;opacity:1}
+.tier.now{transform:translateX(16px);opacity:1}
+.handle{height:42px;margin:0 22px -6px;border:6px solid rgba(28,18,6,.35);border-bottom:none;border-radius:50px 50px 0 0;order:99;transition:opacity .4s}
+.step{display:none;flex-direction:column;gap:22px}
+.step.show{display:flex;animation:in .7s var(--out)}
+@keyframes in{from{opacity:0;transform:translateX(30px)}}
+.stepno{font:600 14px var(--body)}
+</style>
+</head>
+<body>
+<main class="fpage">
+  <section class="fleft">
+    <div>
+      <span class="eyebrow">Know a kitchen that gets it?</span>
+      <h1 class="display depth" style="margin-top:14px">Add a<br>kitchen.</h1>
+      <p>Four quick tiers. A member of the Okayto team visits within two weeks and checks every dish before it goes live.</p>
+      <div class="tiers" id="tiers"><div class="handle"></div></div>
+    </div>
+    <div class="note">Nothing you enter here leaves your browser in this preview.</div>
+  </section>
+  <section class="fright">
+    <form id="f" novalidate>
+      <div class="step show" data-s="0">
+        <span class="stepno">Tier 1 of 4</span><h2 class="display">The kitchen</h2>
+        <div class="field"><label for="kn">Kitchen name</label><input id="kn" autocomplete="organization" placeholder="e.g. Little Millet"><span class="err"></span></div>
+        <div class="row2">
+          <div class="field"><label for="ka">Area</label><select id="ka"><option value="">Choose an area</option><option>Indiranagar</option><option>Koramangala</option><option>Frazer Town</option><option>HSR Layout</option><option>Jayanagar</option><option>Shivajinagar</option><option>Somewhere else</option></select><span class="err"></span></div>
+          <div class="field"><label for="kw">Website or Instagram (optional)</label><input id="kw" placeholder="instagram.com/…"><span class="err"></span></div>
+        </div>
+      </div>
+      <div class="step" data-s="1">
+        <span class="stepno">Tier 2 of 4</span><h2 class="display">Which rules does it serve?</h2>
+        <div class="field"><label>Diets they cook for (pick at least one)</label><div class="chips" id="dchips"></div><span class="err"></span></div>
+        <div class="field"><label for="kd">A dish that proves it</label><input id="kd" placeholder="e.g. Ragi dosa with coconut chutney"><span class="err"></span></div>
+      </div>
+      <div class="step" data-s="2">
+        <span class="stepno">Tier 3 of 4</span><h2 class="display">Allergens and the menu</h2>
+        <div class="field"><label>Allergens that show up a lot</label><div class="chips" id="achips"></div><span class="err"></span></div>
+        <div class="field"><label>Photo of the menu</label><label class="drop" id="drop"><input type="file" accept="image/*" id="kp"><span class="pv">+</span><span><b>Drop a photo or tap to choose</b><span>JPG or PNG, a clear shot of the full menu</span></span></label><span class="err"></span></div>
+      </div>
+      <div class="step" data-s="3">
+        <span class="stepno">Tier 4 of 4</span><h2 class="display">Who are you?</h2>
+        <div class="row2">
+          <div class="field"><label for="yn">Your name</label><input id="yn" autocomplete="name"><span class="err"></span></div>
+          <div class="field"><label for="ye">Email</label><input id="ye" type="email" autocomplete="email" placeholder="you@example.com"><span class="err"></span></div>
+        </div>
+        <div class="field"><label for="yr">I'm the</label><select id="yr"><option>Diner who loves it</option><option>Owner or chef</option><option>Staff member</option></select><span class="err"></span></div>
+      </div>
+      <div class="fbar"><button class="btn ghost" type="button" id="back">Back</button><button class="btn" type="submit" id="next">Next tier</button></div>
+    </form>
+    <div class="done" id="done">
+      <span class="eyebrow">Packed and sent</span>
+      <h2 class="display depth" id="dname">Thank you.</h2>
+      <p id="dmsg"></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="button" id="again">Add another kitchen</button><a class="btn ghost" href="index.html#finder">Back to the guide</a></div>
+    </div>
+  </section>
+</main>
+<script src="js/data.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/page.js"></script>
+<script src="js/forms.js"></script>
+<script>
+const names=['Kitchen','Diets','Menu','You'];
+const tiers=document.getElementById('tiers');
+names.forEach((n,i)=>{const t=document.createElement('div');t.className='tier';t.innerHTML=`${n}<small>${i+1}/4</small>`;tiers.prepend(t)});
+const tierEls=[...tiers.querySelectorAll('.tier')].reverse();
+const diets=F.chips(document.getElementById('dchips'),OK.DIETS.map(d=>({label:d.name,v:d.k,c:d.tag})));
+const als=F.chips(document.getElementById('achips'),OK.ALLERGENS.map(a=>({label:a,v:a,x:1})));
+F.file(document.getElementById('drop'));
+let s=0;const steps=[...document.querySelectorAll('.step')];
+const $=id=>document.getElementById(id),fld=id=>$(id).closest('.field');
+function show(n){s=n;steps.forEach((st,i)=>st.classList.toggle('show',i===n));tierEls.forEach((t,i)=>{t.classList.toggle('on',i<n);t.classList.toggle('now',i===n)});
+  $('back').style.visibility=n?'visible':'hidden';$('next').textContent=n===3?'Pack it and send':'Next tier';}
+function valid(n){let ok=true;
+  if(n===0){ok&=F.check(fld('kn'),$('kn').value.trim().length>1,'Tell us the kitchen\'s name.');ok&=F.check(fld('ka'),$('ka').value,'Pick the area it\'s in.');
+    ok&=F.check(fld('kw'),!$('kw').value||/\./.test($('kw').value),'That doesn\'t look like a link.')}
+  if(n===1){ok&=F.check(document.getElementById('dchips').closest('.field'),diets.size>0,'Pick at least one diet.');ok&=F.check(fld('kd'),$('kd').value.trim().length>2,'Name one dish so we know where to start.')}
+  if(n===2){ok&=F.check(document.getElementById('drop').closest('.field'),$('kp').files.length>0,'Add a photo of the menu.')}
+  if(n===3){ok&=F.check(fld('yn'),$('yn').value.trim().length>1,'Your name, please.');ok&=F.check(fld('ye'),/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($('ye').value),'That email doesn\'t look right.')}
+  if(!ok)F.firstBad(steps[n]);return !!ok}
+$('f').addEventListener('submit',e=>{e.preventDefault();if(!valid(s))return;if(s<3){show(s+1);return}
+  tierEls.forEach(t=>{t.classList.add('on');t.classList.remove('now')});
+  $('f').style.display='none';$('done').classList.add('show');
+  $('dname').innerHTML=`${$('kn').value.trim()}<br>is packed.`;
+  $('dmsg').textContent=`We'll visit ${$('kn').value.trim()} in ${$('ka').value} within two weeks to check its ${[...diets].map(k=>OK.diet(k).name.toLowerCase()).join(', ')} dishes. We'll write to ${$('ye').value} when it's live.`;
+  toast('Kitchen added. Thank you!');scrollTo({top:0,behavior:'smooth'})});
+$('back').onclick=()=>show(Math.max(0,s-1));
+$('again').onclick=()=>location.reload();
+document.querySelectorAll('input,select').forEach(i=>i.addEventListener('input',()=>F.ok(i.closest('.field'))));
+document.getElementById('dchips').addEventListener('change',e=>F.ok(e.currentTarget.closest('.field')));
+show(0);
+</script>
+</body>
+</html>
